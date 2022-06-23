@@ -1,28 +1,66 @@
-
 import Phaser from "phaser";
 
 const config = {
-  type: Phaser.AUTO,
-  width: 800,
-  height: 600,
-  physics: {
-    default: 'arcade',
-    arcade: {
-      gravity: { y: 200 }
-    }
-  },
-  scene: {
-    preload: preload,
-    create: create
-  }
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    physics: {
+        // Arcade physics is a plugin.
+        default: "arcade",
+        arcade: {
+            debug: true,
+            gravity: {
+                y: 400,
+            },
+        },
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update,
+    },
 };
 
+let bird = null;
+
+const flapVelocity = 250;
+const initialBirdPosition = {
+    x: config.width * 0.1,
+    y: config.height / 2,
+};
+function preload() {
+    this.load.image("sky", "assets/sky.png");
+    this.load.image("bird", "assets/bird.png");
+}
+
+function create() {
+    // Background
+    this.add.image(0, 0, "sky").setOrigin(0, 0);
+
+    // Bird
+    bird = this.physics.add
+        .sprite(initialBirdPosition.x, initialBirdPosition.y, "bird")
+        .setOrigin(0);
+
+    this.input.on("pointerdown", flap);
+    this.input.keyboard.on("keydown_SPACE", flap);
+}
+
+// 60 times per second
+// update(time, delta)
+function update() {
+    if (bird.y > config.height || bird.y < -bird.height) {
+        restarPlayerPosition();
+    }
+}
+
+function restarPlayerPosition() {
+    bird.x = initialBirdPosition.x;
+    bird.y = initialBirdPosition.y;
+    bird.body.velocity.y = -flapVelocity / 4;
+}
+function flap() {
+    bird.body.velocity.y = -flapVelocity;
+}
+
 new Phaser.Game(config);
-
-function preload () {
-  this.load.image('sky', 'assets/sky.png');
-}
-
-function create () {
-  this.add.image(400, 300, 'sky');
-}
